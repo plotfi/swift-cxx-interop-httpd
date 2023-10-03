@@ -2,26 +2,13 @@
 #define CXX_H
 
 #include <vector>
-#include <string_view>
-
-bool is_str_42(std::string_view view) {
-    return view == "42";
-}
-
-namespace NS1 {
-  enum class Color {
-    White,
-    Black,
-    Green,
-    Red,
-  };
-}
-
-int TheAnswersAnswer();
+#include <optional>
 
 using cxx_std_vector_of_int = std::vector<int>;
 
-#include <functional>
-std::function<int(int)> getFunction() { return [](int a) { return 0; }; }
+int ContructTCPSocket(uint16_t portNumber);
+int HttpProto(int socket);
+// auto AcceptConnection(int ssock) -> std::optional<int>;
+auto AcceptConnection(int ssock) -> int;
 
 #endif

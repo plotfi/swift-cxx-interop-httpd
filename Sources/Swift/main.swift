@@ -1,131 +1,94 @@
-import CXX
+import Foundation
 import CxxStdlib
+import CXX
 
-/*
+var LOAD_DIR = "./"
+print("* Beginning Server, Root Directory: \(LOAD_DIR)\n")
+FileManager.default.changeCurrentDirectoryPath(LOAD_DIR)
 
-Output should look something like:
+// Sets up networking sockets used by Producer thread to AcceptConnection
+let ServerSocket = ContructTCPSocket(1337)
+defer { close(ServerSocket); }
 
-42 2 3 4 5 99 99
+var requestId: uint = 0
 
-v1: [42, 2, 3, 4, 5, 99, 99]
-v3: [42, 2, 3, 4, 5, 99, 99]
-Modifying v3
-v1: [42, 2, 3, 4, 5, 99, 99]
-v3: [42, 2, 3, 4, 5, 99, 99, 2013]
-Done.
+// Grab the client socket requests and process them async
+while true {
+    if #available(macOS 10.15, *) {
+      // let ClientSocketOpt: CxxOptional<Int32> = AcceptConnection(ServerSocket)
+      let ClientSocketOpt = AcceptConnection(ServerSocket)
 
-*/
+      print("await request \(requestId)")
+      requestId += 1
 
-public func TheAnswer() -> Int {
-  return 42
+      // if let sock = ClientSocketOpt.value {
+      if ClientSocketOpt > 0 {
+        let ClientSocket = ClientSocketOpt
+
+        Task { await HandleRequest(ClientSocket, requestId) }
+      } else {
+        print("Failed to get client socket...")
+        print("Goodbye...")
+        break
+      }
+    } else {
+      // Fallback on earlier versions
+      print("swift async/await and requires macOS 10.15 or later.")
+      print("Goodbye...")
+      break
+    } 
 }
 
-/******************************************************************************\
+@available(macOS 10.15.0, *)
+func HandleRequest(_ ClientSocket : CInt, _ ID: uint) async {
+  let status = HttpProto(ClientSocket)
+  print("Handled request \(ID) with status \(status)")
+}
 
-  Showcasing Extensions with template types and instances.
 
-\******************************************************************************/
+public func getMimeTypeSwift(Name: std.string) -> std.string {
+  let NameStr = String(Name)
 
-// Extensions to generic versions of templates do not work (PL: I have not figured this out myself that is)
-// extension std.vector { mutating func swift_array() -> Array<Self.value_type> { } }
+  var dot = ""
+  if let ExtensionIndex = NameStr.lastIndex(of: ".") {
+    dot = String(NameStr[ExtensionIndex...])
+  }
 
-// Putting an extension on a typealias / using is possible.
-extension cxx_std_vector_of_int {
-   mutating func swift_array() -> Array<Self.value_type> {
-    var arr : [Self.value_type] = []
-    for i in 0..<self.size() {
-      arr.append(self[i])
-    }
-
-    return arr
+  switch dot {
+  case ".html":
+    return "text/html; charset=iso-8859-1"
+  case ".midi":
+    return "audio/midi"
+  case ".jpg":
+    return "image/jpeg"
+  case ".jpeg":
+    return "image/jpeg"
+  case ".mpeg":
+    return "video/mpeg"
+  case ".gif":
+    return "image/gif"
+  case ".png":
+    return "image/png"
+  case ".css":
+    return "text/css"
+  case ".au":
+    return "audio/basic"
+  case ".wav":
+    return "audio/wav"
+  case ".avi":
+    return "video/x-msvideo"
+  case ".mov":
+    return "video/quicktime"
+  case ".mp3":
+    return "audio/mpeg"
+  case ".m4a":
+    return "audio/mp4"
+  case ".pdf":
+    return "application/pdf"
+  case ".ogg":
+    return "application/ogg"
+  default:
+    return "text/plain; charset=iso-8859-1"
   }
 }
 
-/******************************************************************************\
-
-  Showcasing std::vector<int> and operator[]
-
-\******************************************************************************/
-
-let arr : [CInt] = [1, 2, 3, 4, 5]
-var v1 = cxx_std_vector_of_int()
-
-var val : CInt = 42
-var v2 = cxx_std_vector_of_int(2, val)
-
-for a in arr {
-  let b = a
-  v1.push_back(b)
-}
-
-// "__ZNSt3__16vectorIiNS_9allocatorIiEEEixEm", referenced from
-// v1[1] = 24
-
-v1[0] = 42
-
-var a : CInt = 99
-v1.push_back(a)
-v1.push_back(a)
-
-for i in 0..<v1.size() {
-   print(v1[i], terminator: " ")
-}
-print("\n")
-
-print("v1: \(v1.swift_array())")
-var v3 = v1
-print("v3: \(v3.swift_array())")
-
-print("Modifying v3")
-
-var b : CInt = 2013
-v3.push_back(b)
-print("v1: \(v1.swift_array())")
-print("v3: \(v3.swift_array())")
-
-
-/******************************************************************************\
-
-  Showcasing string_view
-
-\******************************************************************************/
-
-"42".withCString { cstring in
-    let view = std.__1.string_view(cstring)
-    assert(is_str_42(view))
-}
-
-"32".withCString { cstring in
-    let view = std.__1.string_view(cstring)
-    assert(!is_str_42(view))
-}
-
-let view = std.string_view("42")
-let isStr42 = is_str_42(view)
-
-
-/******************************************************************************\
-
-  Showcasing namespaces and enum classes
-
-\******************************************************************************/
-
-
-let C = NS1.Color.Black
-
-
-/******************************************************************************\
-
-  Showcasing C++ Lambdas (does not work currently).
-
-\******************************************************************************/
-
-#if false
-var lambdaOut = getFunction()
-var value = lambdaOut(42)
-#endif
-
-let answersAnswer = TheAnswersAnswer()
-print("The answer to the answer is \(answersAnswer)")
-
-print("Done.")

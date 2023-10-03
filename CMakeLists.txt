@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project(cxx-interopt-test LANGUAGES CXX Swift)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -22,5 +22,6 @@ target_compile_options(cxx-interop-test PRIVATE
   "SHELL:-Xfrontend -validate-tbd-against-ir=none"
   "SHELL:-emit-clang-header-path swift-header.h"
   "SHELL:-Xcc -fno-exceptions"
+  "SHELL:-Xcc -std=c++17"
   "SHELL:-Xcc -fignore-exceptions")
 target_link_libraries(cxx-interop-test PRIVATE cxx-support)
