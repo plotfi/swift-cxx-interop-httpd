@@ -10,7 +10,7 @@ FileManager.default.changeCurrentDirectoryPath(LOAD_DIR)
 let ServerSocket = ContructTCPSocket(1337)
 defer { close(ServerSocket); }
 
-var requestId: uint = 0
+var requestId: Int32 = 0
 
 // Grab the client socket requests and process them async
 while true {
@@ -40,9 +40,14 @@ while true {
 }
 
 @available(macOS 10.15.0, *)
-func HandleRequest(_ ClientSocket : CInt, _ ID: uint) async {
-  let status = HttpProto(ClientSocket)
+func HandleRequest(_ ClientSocket : CInt, _ ID: CInt) async {
+  var request: cxx_std_vector_of_int = cxx_std_vector_of_int()
+  request.push_back(ClientSocket)
+  request.push_back(ID)
+
+  let status = HttpProto(request)
   print("Handled request \(ID) with status \(status)")
+  close(ClientSocket)
 }
 
 

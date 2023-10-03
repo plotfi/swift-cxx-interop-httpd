@@ -10,8 +10,8 @@
 #define REUSE_PORT 1
 #define MAXPENDING 5  // Max Requests
 #define BUFFERLEN 100 // recv size per iter
-#define HTTPD "attohttpd"
-#define URL "http://www.puyan.org"
+#define HTTPD "swift-cxx-interop-httpd"
+#define URL "https://github.com/plotfi/swift-cxx-interop-httpd/"
 
 #include <arpa/inet.h>
 #include <cassert>
@@ -156,7 +156,14 @@ int http_proto(FILE *socket, const char *request) {
 }
 }
 
-int HttpProto(int socket) {
+// int HttpProto(int socket, unsigned ID) {
+int HttpProto(std::vector<int> pair) {
+  int socket = pair[0];
+  int ID = pair[1];
+
+  std::cout << "Handling request "
+            << ID << " on socket " << socket << "\n";
+
   std::string requestStr("");
   for (char buffer[BUFFERLEN];;) {
     bzero(buffer, BUFFERLEN);

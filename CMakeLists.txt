@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(cxx-interopt-test LANGUAGES CXX Swift)
+project(swift-cxx-interopt-httpd LANGUAGES CXX Swift)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
@@ -16,12 +16,12 @@ target_include_directories(cxx-support PUBLIC
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/Sources/CXX/include)
 
-add_executable(cxx-interop-test Sources/Swift/main.swift)
-target_compile_options(cxx-interop-test PRIVATE
+add_executable(swift-cxx-interop-httpd Sources/Swift/main.swift)
+target_compile_options(swift-cxx-interop-httpd PRIVATE
   "SHELL:-cxx-interoperability-mode=default"
   "SHELL:-Xfrontend -validate-tbd-against-ir=none"
   "SHELL:-emit-clang-header-path swift-header.h"
   "SHELL:-Xcc -fno-exceptions"
   "SHELL:-Xcc -std=c++17"
   "SHELL:-Xcc -fignore-exceptions")
-target_link_libraries(cxx-interop-test PRIVATE cxx-support)
+target_link_libraries(swift-cxx-interop-httpd PRIVATE cxx-support)
